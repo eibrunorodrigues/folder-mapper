@@ -32,12 +32,21 @@ func Worker(fatalErrors *chan string, routineId int) {
 func processFile(fileName string) {
 	lockFileName := fileName + ".lock"
 	if _, err := os.Stat(lockFileName); os.IsNotExist(err) {
-		defer func() {
-			if err := os.Remove(lockFileName); err != nil {
-				log.Println("Wasn't able to remove lock file from " + fileName)
+		lockWasGenerated := false
+
+		defer func(lockWasGenerated *bool) {
+			if !*lockWasGenerated {
+				if err := os.Remove(lockFileName); err != nil {
+					log.Println("Wasn't able to remove lock file from " + fileName)
+				}
 			}
-		}()
-		os.Create(lockFileName)
+		}(&lockWasGenerated)
+
+		if _, err := os.OpenFile(lockFileName, os.O_RDONLY|os.O_CREATE, 0666); err != nil {
+			return
+		}
+
+		lockWasGenerated = true
 
 	}
 }
