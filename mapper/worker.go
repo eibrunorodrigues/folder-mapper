@@ -18,10 +18,11 @@ func Worker(fatalErrors *chan string, routineId int) {
 			*fatalErrors <- err.Error()
 		}
 
-		log.Println("Everything is ok... Running routineId " + strconv.Itoa(routineId))
+		log.Println("Everything looks okay... Running routineId:" + strconv.Itoa(routineId))
 
 		for _, loopFile := range fileList {
-			processFile(loopFile)
+			// processFile(loopFile)
+			// fmt.Println(path.Dir(loopFile))
 		}
 
 		time.Sleep(10)
@@ -29,7 +30,16 @@ func Worker(fatalErrors *chan string, routineId int) {
 }
 
 func processFile(fileName string) {
+	lockFileName := fileName + ".lock"
+	if _, err := os.Stat(lockFileName); os.IsNotExist(err) {
+		defer func() {
+			if err := os.Remove(lockFileName); err != nil {
+				log.Println("Wasn't able to remove lock file from " + fileName)
+			}
+		}()
+		os.Create(lockFileName)
 
+	}
 }
 
 func getFolderFiles(files *[]string) filepath.WalkFunc {
