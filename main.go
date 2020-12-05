@@ -5,7 +5,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/eibrunorodrigues/folder-mapper/publisher"
+	"github.com/eibrunorodrigues/folder-mapper/mapper"
 )
 
 func initApplication() {
@@ -23,7 +23,7 @@ func workersOchestrer(fatalErrors *chan string) {
 	numOfCpus := runtime.NumCPU()
 
 	for cpuNum := 0; cpuNum < numOfCpus; cpuNum++ {
-		go publisher.Worker(fatalErrors, cpuNum)
+		go mapper.Worker(fatalErrors, cpuNum)
 	}
 }
 
